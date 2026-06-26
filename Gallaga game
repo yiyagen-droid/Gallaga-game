@@ -1,0 +1,46 @@
+import pgzrun, random
+
+HEIGHT = 600
+WIDTH = 1000
+TITLE = "Gallaga game"
+
+ship = Actor("ship")
+bug = Actor("bug")
+
+ship.pos = 500, 500
+bug.pos = random.randint(50, 950), 50
+
+points = "0" 
+
+bullets = []
+
+def draw():
+    global bullet
+    screen.fill("blue")
+    screen.draw.text(points, (30, 30), color = "white")
+    ship.draw()
+    bug.draw()
+
+    for bullet in bullets:
+        if keyboard.up:
+            bullet.draw()
+
+def update():
+    bug.y += 5
+    if bug.y >= 1010:
+        bug.pos = random.randint(50, 950), 50
+
+    if keyboard.left:
+        ship.x -= 7
+    if keyboard.right:
+        ship.x += 7
+
+    if keyboard.up:      
+        bullet = Actor("bullet")        
+        bullet.pos = ship.x, ship.y - 50
+        bullets.append(bullet)
+
+    for bullet in bullets:
+        bullet.y -= 10
+
+pgzrun.go()

@@ -1,46 +1,88 @@
 import pgzrun, random
 
-HEIGHT = 600
-WIDTH = 1000
+HEIGHT = 700
+WIDTH = 1200
 TITLE = "Gallaga game"
 
-ship = Actor("ship")
-bug = Actor("bug")
-
-ship.pos = 500, 500
-bug.pos = random.randint(50, 950), 50
-
-points = "0" 
-
 bullets = []
+bugs = []
+
+ship = Actor("ship")
+
+for i in range(8):
+    bug = Actor("bug")
+    bug.pos = random.randint(50, 1350), random.randint(-50, 50)
+    bugs.append(bug)
+
+ship.pos = 600, 600 
+
+score = 0
+shoot_cooldown = 0
+
+game_over = False
+start = False
 
 def draw():
-    global bullet
-    screen.fill("blue")
-    screen.draw.text(points, (30, 30), color = "white")
-    ship.draw()
-    bug.draw()
+    global start
+    if game_over:
+        screen.draw.text("GAME OVER", center = (WIDTH/2, HEIGHT/2), fontsize = 80, color = "red")
+    else:     
+        screen.fill("blue")
+        if start == False:
+            screen.draw.text("Click to start", center = (WIDTH/2, HEIGHT/2), fontsize = 60, color = "black")
+        
+        else:
+            screen.draw.text(str(score), (30, 30), color = "black", fontsize = 60)
+            ship.draw()
 
-    for bullet in bullets:
-        if keyboard.up:
-            bullet.draw()
+            for bug in bugs:
+                bug.draw()
+
+            for bullet in bullets:
+                bullet.draw()
 
 def update():
-    bug.y += 5
-    if bug.y >= 1010:
-        bug.pos = random.randint(50, 950), 50
+    global score, shoot_cooldown, game_over, start
+    if start == True:
+        if game_over:
+            return  
+        
+        for bug in bugs:
+            if bug.colliderect(ship):
+                game_over = True
+                return
+            
+            bug.y += 6
+            if bug.y >= 750:
+                bug.pos = random.randint(50, 950), 50
 
-    if keyboard.left:
-        ship.x -= 7
-    if keyboard.right:
-        ship.x += 7
+        if keyboard.left:
+            ship.x -= 10
+        if keyboard.right:
+            ship.x += 10
 
-    if keyboard.up:      
-        bullet = Actor("bullet")        
-        bullet.pos = ship.x, ship.y - 50
-        bullets.append(bullet)
+        if shoot_cooldown > 0:
+            shoot_cooldown -= 1
+        if keyboard.up and shoot_cooldown == 0:
+            bullet = Actor("bullet")
+            bullet.pos = ship.x, ship.y - 50
+            bullets.append(bullet)
+            shoot_cooldown = 15
 
-    for bullet in bullets:
-        bullet.y -= 10
+        for bullet in bullets[:]:
+            bullet.y -= 10
+            if bullet.y < 0:
+                bullets.remove(bullet)
+        for bug in bugs:
+            for bullet in bullets[:]:
+                if bullet.colliderect(bug):
+                    bullets.remove(bullet)
+                    bug.pos = random.randint(50, 950), 50
+                    score += 1
+        
+def on_mouse_down():
+    global start
+    if start == False:
+        start = True
 
 pgzrun.go()
